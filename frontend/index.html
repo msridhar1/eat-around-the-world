@@ -132,7 +132,9 @@
   .chip-remove { background:none; border:none; color:var(--green-bright); cursor:pointer; font-size:13px; padding:0; line-height:1; opacity:0.7; }
   .chip-remove:hover { opacity:1; }
 
+  
   #map-tooltip { position:fixed; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:8px 12px; font-size:12px; pointer-events:none; z-index:50; display:none; max-width:220px; }
+@media (hover: none) { #map-tooltip { display:none !important; } }
   .tooltip-country { font-weight:600; font-size:13px; color:var(--text); }
   .tooltip-restaurant { color:var(--green-bright); margin-top:2px; }
 

@@ -213,6 +213,8 @@ def api_stats():
     conn.close()
     return jsonify({
         "countries_done": countries_done,
+        "countries_remaining": 195 - countries_done,
+        "total_countries": 195,
         "restaurants_logged": restaurants_total,
     })
 
