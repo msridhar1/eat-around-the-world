@@ -304,9 +304,10 @@ let state = { countriesDone:[], stats:{}, wheelCountries:[], isSpinning:false, c
 // ── Boot ──────────────────────────────────────────────────────────────────────
 async function boot() {
   await Promise.all([loadStats(), loadCountries(), loadMostVisited()]);
-  await loadMap();
+  loadMap();
   buildWheel();
   buildCountriesPills();
+  showFavs('manasi');
 }
 
 // ── Stats ─────────────────────────────────────────────────────────────────────
@@ -371,7 +372,7 @@ async function loadMap() {
   const doneMap = {};
   state.countriesDone.forEach(c=>{ if(c.country) doneMap[c.country.toLowerCase()]=c; });
   let world;
-  try { const res = await fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json'); world = await res.json(); }
+  try { const res = await fetch('/countries-110m.json'); world = await res.json(); }
   catch(e) { g.append('text').attr('x',W/2).attr('y',H/2).attr('text-anchor','middle').attr('fill','#4a5a46').text('Map unavailable — check internet connection'); return; }
   const countries = topojson.feature(world,world.objects.countries);
   const ISO_NAMES = getISONames();
@@ -593,7 +594,7 @@ async function submitAllRestaurants(){
   addEntryRow(); addEntryRow(); addEntryRow();
 }
 
-// ── Favorites (hard-coded) ────────────────────────────────────────────────────
+// ── Favorites ────────────────────────────────────────────────────────────────
 const FAVORITES = {
   manasi: [
     { name: "Baan Mae",   country: "Laos" },
@@ -607,21 +608,36 @@ const FAVORITES = {
   ],
 };
 
+function getCountriesForRestaurant(name) {
+  const lower = name.toLowerCase();
+  const found = state.countriesDone
+    .filter(c =>
+      c.restaurant_name?.toLowerCase() === lower ||
+      (c.restaurants || []).some(r => r.name?.toLowerCase() === lower)
+    )
+    .map(c => c.country);
+  return found;
+}
+
 function showFavs(person) {
   document.querySelectorAll('.fav-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.fav-tab').forEach(t => { if(t.textContent.toLowerCase() === person) t.classList.add('active'); });
   const list = document.getElementById('fav-list');
   const rankClasses = ['fav-rank-1','fav-rank-2','fav-rank-3'];
   const medals = ['🥇','🥈','🥉'];
-  list.innerHTML = FAVORITES[person].map((item, i) => `
+  list.innerHTML = FAVORITES[person].map((item, i) => {
+    const countries = getCountriesForRestaurant(item.name);
+    const countryDisplay = countries.length ? countries.join(' · ') : item.country;
+    return `
     <div class="fav-item">
       <div class="fav-rank ${rankClasses[i]}">${medals[i]}</div>
       <div class="fav-info">
         <div class="fav-name">${item.name}</div>
-        <div class="fav-country">${item.country}</div>
+        <div class="fav-country">${countryDisplay}</div>
       </div>
       <a class="fav-maps" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.name)}" target="_blank" title="Open in Google Maps">📍</a>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 document.getElementById('add-modal').addEventListener('click',function(e){if(e.target===this)closeAddModal();});
