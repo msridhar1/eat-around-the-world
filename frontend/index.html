@@ -9,681 +9,164 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
 <style>
   :root {
-    --bg: #0d0f0e;
-    --surface: #141714;
-    --surface2: #1c201b;
-    --green: #4caf72;
-    --green-bright: #6dcc8f;
-    --green-glow: rgba(76,175,114,0.18);
-    --muted: #3a3f38;
-    --text: #e8ede6;
-    --text-dim: #7a8a76;
-    --accent: #c8e6b0;
-    --gold: #d4a853;
-    --border: rgba(76,175,114,0.15);
-    --radius: 16px;
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* Subtle grain overlay */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 0;
-    opacity: 0.4;
-  }
-
-  .app { position: relative; z-index: 1; }
-
-  /* ── Header ── */
-  header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 28px 40px 24px;
-    border-bottom: 1px solid var(--border);
-    background: linear-gradient(180deg, rgba(76,175,114,0.04) 0%, transparent 100%);
-  }
-
-  .logo {
-    display: flex;
-    align-items: baseline;
-    gap: 12px;
-  }
-
-  .logo h1 {
-    font-family: 'Playfair Display', serif;
-    font-size: 26px;
-    font-weight: 900;
-    letter-spacing: -0.5px;
-    color: var(--text);
-  }
-
-  .logo .tagline {
-    font-size: 12px;
-    color: var(--text-dim);
-    letter-spacing: 2px;
-    text-transform: uppercase;
-  }
-
-  .header-actions {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-  }
-
-  .btn {
-    padding: 9px 18px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: var(--surface2);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .btn:hover { background: var(--surface); border-color: var(--green); color: var(--green-bright); }
-  .btn.primary { background: var(--green); border-color: var(--green); color: #0d0f0e; font-weight: 600; }
-  .btn.primary:hover { background: var(--green-bright); }
-  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-  /* ── Main layout ── */
-  main {
-    display: grid;
-    grid-template-columns: 1fr 340px;
-    grid-template-rows: auto auto;
-    gap: 20px;
-    padding: 24px 40px 40px;
-    max-width: 1600px;
-    margin: 0 auto;
-  }
-
-  /* ── Cards ── */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 24px;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--green), transparent);
-    opacity: 0.4;
-  }
-
-  .card-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    font-style: italic;
-    margin-bottom: 18px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  /* ── Map section ── */
-  .map-section {
-    grid-column: 1;
-    grid-row: 1;
-  }
-
-  #world-map {
-    width: 100%;
-    height: 520px;
-    border-radius: 10px;
-    overflow: hidden;
-    background: #0a0c0a;
-    cursor: grab;
-  }
-
-  #world-map:active { cursor: grabbing; }
-
-  .map-legend {
-    display: flex;
-    gap: 20px;
-    margin-top: 14px;
-    align-items: center;
-  }
-
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    color: var(--text-dim);
-  }
-
-  .legend-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 2px;
-  }
-
-  /* ── Stats section ── */
-  .stats-section {
-    grid-column: 2;
-    grid-row: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-  }
-
-  .stat-card {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 18px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .stat-card::after {
-    content: '';
-    position: absolute;
-    right: -10px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background: var(--green-glow);
-    filter: blur(20px);
-  }
-
-  .stat-label {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: var(--text-dim);
-    margin-bottom: 4px;
-  }
-
-  .stat-value {
-    font-family: 'Playfair Display', serif;
-    font-size: 38px;
-    font-weight: 900;
-    color: var(--text);
-    line-height: 1;
-  }
-
-  .stat-value.green { color: var(--green-bright); }
-
-  .stat-sub {
-    font-size: 11px;
-    color: var(--text-dim);
-    margin-top: 2px;
-  }
-
-  .progress-bar-wrap {
-    background: var(--muted);
-    border-radius: 100px;
-    height: 4px;
-    margin-top: 12px;
-    overflow: hidden;
-  }
-
-  .progress-bar-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--green), var(--green-bright));
-    border-radius: 100px;
-    transition: width 1s cubic-bezier(.4,0,.2,1);
-  }
-
-  /* ── Top 5 ── */
-  .top5-section {
-    grid-column: 2;
-    grid-row: 2;
-  }
-
-  .top5-list { display: flex; flex-direction: column; gap: 10px; }
-
-  .top5-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 12px;
-    background: var(--surface2);
-    border-radius: 10px;
-    border: 1px solid transparent;
-    transition: border-color 0.2s;
-  }
-
-  .top5-item:hover { border-color: var(--border); }
-
-  .top5-rank {
-    font-family: 'Playfair Display', serif;
-    font-size: 18px;
-    font-weight: 900;
-    color: var(--muted);
-    width: 24px;
-    text-align: center;
-    flex-shrink: 0;
-  }
-
-  .top5-rank.gold { color: var(--gold); }
-
-  .top5-info { flex: 1; min-width: 0; }
-
-  .top5-name {
-    font-size: 13px;
-    font-weight: 500;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    color: var(--text);
-  }
-
-  .top5-meta {
-    font-size: 11px;
-    color: var(--text-dim);
-    margin-top: 1px;
-  }
-
-  .top5-score {
-    font-family: 'Playfair Display', serif;
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--green-bright);
-    flex-shrink: 0;
-  }
-
-  /* ── Wheel section ── */
-  .wheel-section {
-    grid-column: 1;
-    grid-row: 2;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .wheel-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 24px;
-    width: 100%;
-  }
-
-  .wheel-wrap {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .wheel-pointer {
-    position: absolute;
-    top: -12px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 0;
-    height: 0;
-    border-left: 12px solid transparent;
-    border-right: 12px solid transparent;
-    border-top: 24px solid var(--green-bright);
-    z-index: 10;
-    filter: drop-shadow(0 0 8px var(--green));
-  }
-
-  #wheel-canvas {
-    border-radius: 50%;
-    box-shadow: 0 0 60px rgba(76,175,114,0.15), 0 0 0 2px var(--border);
-  }
-
-  .wheel-result {
-    text-align: center;
-    min-height: 60px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-  }
-
-  .wheel-result-country {
-    font-family: 'Playfair Display', serif;
-    font-size: 28px;
-    font-weight: 900;
-    color: var(--green-bright);
-    animation: pop 0.4s cubic-bezier(.4,0,.2,1);
-  }
-
-  .wheel-result-hint {
-    font-size: 12px;
-    color: var(--text-dim);
-  }
-
-  @keyframes pop {
-    0% { transform: scale(0.8); opacity: 0; }
-    100% { transform: scale(1); opacity: 1; }
-  }
-
-  /* ── Countries done list (collapsed) ── */
-  .countries-section {
-    grid-column: 1;
-    grid-row: 3;
-  }
-
-  .countries-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    max-height: 280px;
-    overflow-y: auto;
-  }
-
-  .country-pill {
-    background: var(--green-glow);
-    border: 1px solid var(--green);
-    color: var(--green-bright);
-    border-radius: 100px;
-    padding: 3px 10px;
-    font-size: 11px;
-    font-weight: 500;
-    white-space: nowrap;
-  }
-
-  /* ── Password gate ── */
-  #password-gate {
-    position: fixed;
-    inset: 0;
-    background: var(--bg);
-    z-index: 9999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .pw-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 44px 40px;
-    width: 340px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 18px;
-    text-align: center;
-  }
-
-  .pw-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--text);
-  }
-
-  .pw-input {
-    width: 100%;
-    padding: 12px 16px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 15px;
-    outline: none;
-    text-align: center;
-    transition: border-color 0.2s;
-    letter-spacing: 2px;
-  }
-
-  .pw-input:focus { border-color: var(--green); }
-
-  .pw-error {
-    color: var(--gold);
-    font-size: 13px;
-    min-height: 18px;
-  }
-
-  /* ── Country multi-select ── */
-  .country-tags-wrap {
-    position: relative;
-  }
-
-  .country-tags-input {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    padding: 4px 8px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 7px;
-    min-height: 34px;
-    align-items: center;
-    cursor: text;
-  }
-
-  .country-tags-input:focus-within { border-color: var(--green); }
-
-  .ctag {
-    background: var(--green-glow);
-    border: 1px solid var(--green);
-    color: var(--green-bright);
-    border-radius: 4px;
-    padding: 2px 6px;
-    font-size: 11px;
-    display: flex;
-    align-items: center;
-    gap: 3px;
-    white-space: nowrap;
-  }
-
-  .ctag button {
-    background: none;
-    border: none;
-    color: var(--green-bright);
-    cursor: pointer;
-    padding: 0;
-    font-size: 13px;
-    line-height: 1;
-    opacity: 0.7;
-  }
-
-  .ctag button:hover { opacity: 1; }
-
-  .ctype-input {
-    border: none;
-    background: none;
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    outline: none;
-    min-width: 70px;
-    flex: 1;
-    padding: 2px 2px;
-  }
-
-  .ctype-input::placeholder { color: var(--text-dim); }
-
-  .country-dropdown {
-    position: fixed;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    max-height: 160px;
-    overflow-y: auto;
-    z-index: 9000;
-    display: none;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-  }
-
-  .country-dropdown.open { display: block; }
-
-  .coption {
-    padding: 7px 12px;
-    font-size: 13px;
-    cursor: pointer;
-    color: var(--text);
-    transition: background 0.1s;
-  }
-
-  .coption:hover { background: var(--surface2); color: var(--green-bright); }
-
-  /* ── Add restaurant modal ── */
-  .modal-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    backdrop-filter: blur(6px);
-    z-index: 100;
-    display: none;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .modal-backdrop.open { display: flex; }
-
-  .modal {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 32px;
-    width: 440px;
-    max-width: 95vw;
-    position: relative;
-  }
-
-  .modal h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 22px;
-    font-weight: 700;
-    margin-bottom: 24px;
-    color: var(--text);
-  }
-
-  .form-group { margin-bottom: 16px; }
-
-  .form-group label {
-    display: block;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 1.2px;
-    color: var(--text-dim);
-    margin-bottom: 6px;
-  }
-
-  .form-group input, .form-group select {
-    width: 100%;
-    padding: 10px 14px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-
-  .form-group input:focus, .form-group select:focus {
-    border-color: var(--green);
-  }
-
-  .form-group input::placeholder { color: var(--text-dim); }
-
-  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
-  .modal-actions { display: flex; gap: 10px; margin-top: 24px; justify-content: flex-end; }
-
-  .modal-close {
-    position: absolute;
-    top: 16px; right: 16px;
-    background: none;
-    border: none;
-    color: var(--text-dim);
-    font-size: 20px;
-    cursor: pointer;
-    padding: 4px;
-  }
-
-  .modal-close:hover { color: var(--text); }
-
-  /* ── Tooltip ── */
-  #map-tooltip {
-    position: fixed;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 8px 12px;
-    font-size: 12px;
-    pointer-events: none;
-    z-index: 50;
-    display: none;
-  }
-
-  .tooltip-country { font-weight: 600; font-size: 13px; color: var(--text); }
-  .tooltip-restaurant { color: var(--green-bright); margin-top: 2px; }
-  .tooltip-score { color: var(--text-dim); font-size: 11px; }
-
-  /* Scrollbar */
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 2px; }
-
-  /* ── Responsive ── */
-  @media (max-width: 1100px) {
-    main { grid-template-columns: 1fr; grid-template-rows: auto; }
-    .map-section { grid-column: 1; grid-row: 1; }
-    .stats-section { grid-column: 1; grid-row: 2; flex-direction: row; flex-wrap: wrap; }
-    .stat-card { flex: 1; min-width: 140px; }
-    .top5-section { grid-column: 1; grid-row: 3; }
-    .wheel-section { grid-column: 1; grid-row: 4; }
-    .countries-section { grid-column: 1; grid-row: 5; }
-    header { padding: 20px 20px; }
-    main { padding: 16px 20px 40px; }
+    --bg: #0d0f0e; --surface: #141714; --surface2: #1c201b;
+    --green: #4caf72; --green-bright: #6dcc8f; --green-glow: rgba(76,175,114,0.18);
+    --muted: #3a3f38; --text: #e8ede6; --text-dim: #7a8a76;
+    --gold: #d4a853; --border: rgba(76,175,114,0.15); --radius: 16px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; overflow-x:hidden; }
+  body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E"); pointer-events:none; z-index:0; opacity:0.4; }
+  .app { position:relative; z-index:1; }
+
+  /* Password screen */
+  #pw-screen { position:fixed; inset:0; background:var(--bg); z-index:999; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:20px; }
+  #pw-screen h2 { font-family:'Playfair Display',serif; font-size:28px; font-weight:900; }
+  #pw-screen p { color:var(--text-dim); font-size:14px; }
+  #pw-wrap { display:flex; gap:10px; }
+  #pw-input { padding:11px 16px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:15px; outline:none; width:220px; }
+  #pw-input:focus { border-color:var(--green); }
+  #pw-error { color:#e06c6c; font-size:12px; min-height:16px; }
+
+  header { display:flex; align-items:center; justify-content:space-between; padding:28px 40px 24px; border-bottom:1px solid var(--border); background:linear-gradient(180deg,rgba(76,175,114,0.04) 0%,transparent 100%); }
+  .logo { display:flex; align-items:baseline; gap:12px; }
+  .logo h1 { font-family:'Playfair Display',serif; font-size:26px; font-weight:900; letter-spacing:-0.5px; }
+  .logo .tagline { font-size:12px; color:var(--text-dim); letter-spacing:2px; text-transform:uppercase; }
+  .header-actions { display:flex; gap:10px; align-items:center; }
+
+  .btn { padding:9px 18px; border-radius:8px; border:1px solid var(--border); background:var(--surface2); color:var(--text); font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:6px; }
+  .btn:hover { background:var(--surface); border-color:var(--green); color:var(--green-bright); }
+  .btn.primary { background:var(--green); border-color:var(--green); color:#0d0f0e; font-weight:600; }
+  .btn.primary:hover { background:var(--green-bright); }
+  .btn:disabled { opacity:0.4; cursor:not-allowed; }
+
+  main { display:grid; grid-template-columns:1fr 340px; gap:20px; padding:24px 40px 40px; max-width:1600px; margin:0 auto; }
+
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:24px; position:relative; overflow:hidden; }
+  .card::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,var(--green),transparent); opacity:0.4; }
+  .card-title { font-family:'Playfair Display',serif; font-size:15px; font-weight:700; letter-spacing:0.5px; color:var(--text-dim); text-transform:uppercase; font-style:italic; margin-bottom:18px; }
+
+  .map-section { grid-column:1; grid-row:1/3; }
+  #world-map { width:100%; height:520px; border-radius:10px; overflow:hidden; background:#0a0c0a; cursor:grab; }
+  #world-map:active { cursor:grabbing; }
+  .map-legend { display:flex; gap:20px; margin-top:14px; align-items:center; }
+  .legend-item { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-dim); }
+  .legend-dot { width:10px; height:10px; border-radius:2px; }
+
+  .stats-section { grid-column:2; grid-row:1; display:flex; flex-direction:column; gap:12px; }
+  .stat-card { background:var(--surface2); border:1px solid var(--border); border-radius:12px; padding:16px 20px; position:relative; overflow:hidden; }
+  .stat-card::after { content:''; position:absolute; right:-10px; top:50%; transform:translateY(-50%); width:60px; height:60px; border-radius:50%; background:var(--green-glow); filter:blur(20px); }
+  .stat-label { font-size:11px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-dim); margin-bottom:4px; }
+  .stat-value { font-family:'Playfair Display',serif; font-size:36px; font-weight:900; color:var(--text); line-height:1; }
+  .stat-value.green { color:var(--green-bright); }
+  .stat-sub { font-size:11px; color:var(--text-dim); margin-top:2px; }
+  .progress-bar-wrap { background:var(--muted); border-radius:100px; height:4px; margin-top:10px; overflow:hidden; }
+  .progress-bar-fill { height:100%; background:linear-gradient(90deg,var(--green),var(--green-bright)); border-radius:100px; transition:width 1s cubic-bezier(.4,0,.2,1); }
+
+  .favorites-section { grid-column:2; grid-row:2; }
+  .fav-tabs { display:flex; gap:0; margin-bottom:16px; background:var(--surface2); border-radius:8px; padding:3px; }
+  .fav-tab { flex:1; padding:6px 10px; border:none; background:none; color:var(--text-dim); font-family:'DM Sans',sans-serif; font-size:12px; font-weight:500; cursor:pointer; border-radius:6px; transition:all 0.2s; text-align:center; }
+  .fav-tab.active { background:var(--green); color:#0d0f0e; font-weight:600; }
+  .fav-list { display:flex; flex-direction:column; gap:8px; }
+  .fav-item { display:flex; align-items:center; gap:12px; padding:10px 12px; background:var(--surface2); border-radius:10px; }
+  .fav-rank { font-family:'Playfair Display',serif; font-size:20px; font-weight:900; width:26px; text-align:center; flex-shrink:0; }
+  .fav-rank-1 { color:var(--gold); }
+  .fav-rank-2 { color:#a0a0a0; }
+  .fav-rank-3 { color:#8b6914; }
+  .fav-info { flex:1; min-width:0; }
+  .fav-name { font-size:13px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .fav-country { font-size:11px; color:var(--text-dim); margin-top:2px; }
+
+  .top5-section { grid-column:2; grid-row:3; }
+  .top5-list { display:flex; flex-direction:column; gap:10px; }
+  .top5-item { display:flex; align-items:center; gap:12px; padding:10px 12px; background:var(--surface2); border-radius:10px; border:1px solid transparent; transition:border-color 0.2s; }
+  .top5-item:hover { border-color:var(--border); }
+  .top5-rank { font-family:'Playfair Display',serif; font-size:18px; font-weight:900; color:var(--muted); width:24px; text-align:center; flex-shrink:0; }
+  .top5-rank.gold { color:var(--gold); }
+  .top5-info { flex:1; min-width:0; }
+  .top5-name { font-size:13px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .top5-meta { font-size:11px; color:var(--text-dim); margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .top5-count { font-family:'Playfair Display',serif; font-size:15px; font-weight:700; color:var(--text-dim); flex-shrink:0; }
+
+  .wheel-section { grid-column:1; grid-row:3; display:flex; flex-direction:column; align-items:center; }
+  .wheel-container { display:flex; flex-direction:column; align-items:center; gap:24px; width:100%; }
+  .wheel-wrap { position:relative; display:flex; align-items:center; justify-content:center; }
+  .wheel-pointer { position:absolute; top:-12px; left:50%; transform:translateX(-50%); width:0; height:0; border-left:12px solid transparent; border-right:12px solid transparent; border-top:24px solid var(--green-bright); z-index:10; filter:drop-shadow(0 0 8px var(--green)); }
+  #wheel-canvas { border-radius:50%; box-shadow:0 0 60px rgba(76,175,114,0.15),0 0 0 2px var(--border); }
+  .wheel-result { text-align:center; min-height:60px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; }
+  .wheel-result-country { font-family:'Playfair Display',serif; font-size:28px; font-weight:900; color:var(--green-bright); }
+  .wheel-result-hint { font-size:12px; color:var(--text-dim); }
+  @keyframes pop { 0%{transform:scale(0.8);opacity:0} 100%{transform:scale(1);opacity:1} }
+
+  .countries-section { grid-column:2; grid-row:4; }
+  .countries-grid { display:flex; flex-wrap:wrap; gap:6px; max-height:280px; overflow-y:auto; }
+  .country-pill { background:var(--green-glow); border:1px solid var(--green); color:var(--green-bright); border-radius:100px; padding:3px 10px; font-size:11px; font-weight:500; white-space:nowrap; }
+
+  /* Modal */
+  .modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(6px); z-index:100; display:none; align-items:center; justify-content:center; }
+  .modal-backdrop.open { display:flex; }
+  .modal { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:32px; width:560px; max-width:96vw; position:relative; max-height:90vh; overflow-y:auto; }
+  .modal h2 { font-family:'Playfair Display',serif; font-size:22px; font-weight:700; margin-bottom:20px; }
+  .modal-close { position:absolute; top:16px; right:16px; background:none; border:none; color:var(--text-dim); font-size:20px; cursor:pointer; }
+  .modal-close:hover { color:var(--text); }
+  .modal-actions { display:flex; gap:10px; margin-top:20px; justify-content:flex-end; }
+
+  /* Entry row */
+  .entry-row { display:flex; flex-direction:column; gap:8px; background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:12px; margin-bottom:8px; }
+  .entry-row-top { display:flex; gap:8px; align-items:center; }
+  .entry-input { flex:1; padding:8px 10px; background:var(--bg); border:1px solid var(--border); border-radius:7px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:13px; outline:none; }
+  .entry-input:focus { border-color:var(--green); }
+  .entry-remove { background:none; border:none; color:var(--text-dim); font-size:18px; cursor:pointer; padding:0 4px; flex-shrink:0; }
+  .entry-remove:hover { color:#e06c6c; }
+
+  /* Country tag input */
+  .country-tag-wrap { position:relative; }
+  .country-tag-input { width:100%; padding:7px 10px; background:var(--bg); border:1px solid var(--border); border-radius:7px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:12px; outline:none; }
+  .country-tag-input:focus { border-color:var(--green); }
+  .country-dropdown { position:absolute; top:calc(100% + 4px); left:0; right:0; background:var(--surface); border:1px solid var(--border); border-radius:8px; max-height:160px; overflow-y:auto; z-index:200; display:none; box-shadow:0 8px 24px rgba(0,0,0,0.4); }
+  .country-dropdown.open { display:block; }
+  .country-option { padding:8px 12px; font-size:12px; cursor:pointer; color:var(--text); }
+  .country-option:hover { background:var(--surface2); color:var(--green-bright); }
+  .country-chips { display:flex; flex-wrap:wrap; gap:5px; margin-top:6px; min-height:4px; }
+  .country-chip { display:flex; align-items:center; gap:4px; background:var(--green-glow); border:1px solid var(--green); color:var(--green-bright); border-radius:100px; padding:2px 8px 2px 10px; font-size:11px; font-weight:500; }
+  .chip-remove { background:none; border:none; color:var(--green-bright); cursor:pointer; font-size:13px; padding:0; line-height:1; opacity:0.7; }
+  .chip-remove:hover { opacity:1; }
+
+  #map-tooltip { position:fixed; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:8px 12px; font-size:12px; pointer-events:none; z-index:50; display:none; max-width:220px; }
+  .tooltip-country { font-weight:600; font-size:13px; color:var(--text); }
+  .tooltip-restaurant { color:var(--green-bright); margin-top:2px; }
+
+  ::-webkit-scrollbar { width:4px; } ::-webkit-scrollbar-track { background:transparent; } ::-webkit-scrollbar-thumb { background:var(--muted); border-radius:2px; }
+
+  @media (max-width:1100px) {
+    main { grid-template-columns:1fr; }
+    .map-section { grid-column:1; grid-row:1; }
+    .stats-section { grid-column:1; grid-row:2; flex-direction:row; flex-wrap:wrap; }
+    .stat-card { flex:1; min-width:140px; }
+    .favorites-section { grid-column:1; grid-row:3; }
+    .top5-section { grid-column:1; grid-row:4; }
+    .wheel-section { grid-column:1; grid-row:5; }
+    .countries-section { grid-column:1; grid-row:6; }
+    header { padding:20px; }
+    main { padding:16px 20px 40px; }
   }
 </style>
 </head>
 <body>
-<div id="password-gate">
-  <div class="pw-card">
-    <div style="font-size:52px">🌍</div>
-    <div class="pw-title">Eat Around the World</div>
-    <div style="font-size:13px;color:var(--text-dim)">Enter password to continue</div>
-    <input type="password" class="pw-input" id="pw-input" placeholder="••••••••"
-      onkeydown="if(event.key==='Enter')checkPassword()" autofocus />
-    <button class="btn primary" onclick="checkPassword()" style="width:100%;justify-content:center;padding:11px;">
-      Enter
-    </button>
-    <div class="pw-error" id="pw-error"></div>
+
+<!-- Password Screen -->
+<div id="pw-screen">
+  <div style="font-size:36px">🌍</div>
+  <h2>Eat Around the World</h2>
+  <p>Enter the password to continue</p>
+  <div id="pw-wrap">
+    <input id="pw-input" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')checkPw()" autofocus />
+    <button class="btn primary" onclick="checkPw()">Enter</button>
   </div>
+  <div id="pw-error"></div>
 </div>
 
-<div class="app">
-
+<div class="app" id="main-app" style="display:none">
   <header>
     <div class="logo">
       <h1>🌍 Eat Around the World</h1>
@@ -695,142 +178,115 @@
   </header>
 
   <main>
-    <!-- World Map -->
     <div class="card map-section">
       <div class="card-title">🗺 World Progress</div>
       <div id="world-map"></div>
       <div class="map-legend">
-        <div class="legend-item">
-          <div class="legend-dot" style="background:var(--green)"></div>
-          <span>Completed</span>
-        </div>
-        <div class="legend-item">
-          <div class="legend-dot" style="background:#2a2e2a"></div>
-          <span>Remaining</span>
-        </div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div><span>Completed</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#2a2e2a"></div><span>Remaining</span></div>
         <span style="margin-left:auto;font-size:11px;color:var(--text-dim)">Drag to pan · Scroll to zoom</span>
       </div>
     </div>
 
-    <!-- Stats -->
     <div class="stats-section">
       <div class="stat-card">
-        <div>
-          <div class="stat-label">Countries Done</div>
-          <div class="stat-value green" id="stat-done">—</div>
-          <div class="stat-sub" id="stat-total-label">of — places</div>
-          <div class="progress-bar-wrap" style="width:180px">
-            <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
-          </div>
-        </div>
+        <div class="stat-label">Countries Done</div>
+        <div class="stat-value green" id="stat-done">—</div>
+        <div class="stat-sub">of 195 countries</div>
+        <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill" style="width:0%"></div></div>
       </div>
       <div class="stat-card">
-        <div>
-          <div class="stat-label">Remaining</div>
-          <div class="stat-value" id="stat-remaining">—</div>
-          <div class="stat-sub">cuisines to explore</div>
-        </div>
+        <div class="stat-label">Remaining</div>
+        <div class="stat-value" id="stat-remaining">—</div>
+        <div class="stat-sub">countries to explore</div>
       </div>
       <div class="stat-card">
-        <div>
-          <div class="stat-label">Restaurants Logged</div>
-          <div class="stat-value" id="stat-restaurants">—</div>
-          <div class="stat-sub">eaten together</div>
-        </div>
+        <div class="stat-label">Restaurants Logged</div>
+        <div class="stat-value" id="stat-restaurants">—</div>
+        <div class="stat-sub">eaten together</div>
       </div>
       <div class="stat-card">
-        <div>
-          <div class="stat-label">Countries Eligible</div>
-          <div class="stat-value" id="stat-eligible">—</div>
-          <div class="stat-sub">left on the wheel</div>
-        </div>
+        <div class="stat-label">Eligible Countries</div>
+        <div class="stat-value" id="stat-eligible">195</div>
+        <div class="stat-sub">total in the challenge</div>
       </div>
     </div>
 
-    <!-- Most visited -->
+    <div class="card favorites-section">
+      <div class="card-title">❤️ Our Favorites</div>
+      <div class="fav-tabs">
+        <button class="fav-tab active" onclick="showFavs('manasi')">Manasi</button>
+        <button class="fav-tab" onclick="showFavs('pranay')">Pranay</button>
+      </div>
+      <div class="fav-list" id="fav-list"></div>
+    </div>
+
     <div class="card top5-section">
       <div class="card-title">🍽️ Most Visited Cuisines</div>
-      <div class="top5-list" id="top5-list">
-        <div style="color:var(--text-dim);font-size:13px">Loading...</div>
-      </div>
+      <div class="top5-list" id="top5-list"><div style="color:var(--text-dim);font-size:13px">Loading...</div></div>
     </div>
 
-    <!-- Spin the Wheel -->
     <div class="card wheel-section">
-      <div class="card-title">🎡 Spin for Next Cuisine</div>
+      <div class="card-title">🎡 Spin for Next Country</div>
       <div class="wheel-container">
         <div class="wheel-wrap">
           <div class="wheel-pointer"></div>
-          <canvas id="wheel-canvas" width="400" height="400"></canvas>
+          <canvas id="wheel-canvas" width="420" height="420"></canvas>
         </div>
         <div class="wheel-result">
           <div class="wheel-result-country" id="wheel-result-text">Spin to decide!</div>
-          <div class="wheel-result-hint" id="wheel-result-hint">All unvisited countries in the wheel</div>
+          <div class="wheel-result-hint" id="wheel-result-hint">All unvisited countries on the wheel</div>
         </div>
-        <button class="btn primary" id="spin-btn" onclick="spinWheel()" style="padding:12px 32px;font-size:15px">
-          🎲 Spin the Wheel
-        </button>
+        <button class="btn primary" id="spin-btn" onclick="spinWheel()" style="padding:12px 32px;font-size:15px">🎲 Spin the Wheel</button>
       </div>
     </div>
 
-    <!-- Countries Done List -->
     <div class="card countries-section">
       <div class="card-title">✅ Countries Completed</div>
-      <div class="countries-grid" id="countries-grid">
-        <span style="color:var(--text-dim);font-size:13px">Loading...</span>
-      </div>
+      <div class="countries-grid" id="countries-grid"><span style="color:var(--text-dim);font-size:13px">Loading...</span></div>
     </div>
   </main>
-
 </div>
 
 <!-- Add Restaurant Modal -->
 <div class="modal-backdrop" id="add-modal">
-  <div class="modal" style="width:600px;max-width:96vw;">
+  <div class="modal">
     <button class="modal-close" onclick="closeAddModal()">✕</button>
     <h2>Add Restaurants</h2>
-
-    <div style="display:grid;grid-template-columns:1fr 1fr 32px;gap:6px;align-items:center;margin-bottom:6px;">
-      <div style="font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-dim);">Restaurant *</div>
-      <div style="font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-dim);">Countries</div>
-      <div></div>
-    </div>
-
-    <div id="entry-rows" style="display:flex;flex-direction:column;gap:6px;max-height:340px;overflow-y:auto;padding-right:4px;"></div>
-
-    <div style="margin-top:12px;">
-      <button class="btn" onclick="addEntryRow()" style="font-size:12px;padding:7px 14px;">+ Add another row</button>
-    </div>
-
-    <div id="submit-status" style="min-height:20px;margin-top:10px;font-size:12px;color:var(--green-bright);"></div>
-
+    <div id="entry-rows"></div>
+    <button class="btn" onclick="addEntryRow()" style="font-size:12px;padding:7px 14px;margin-top:4px">+ Add another row</button>
+    <div id="submit-status" style="min-height:18px;margin-top:10px;font-size:12px;color:var(--green-bright);"></div>
     <div class="modal-actions">
       <button class="btn" onclick="closeAddModal()">Cancel</button>
-      <button class="btn primary" onclick="submitAllRestaurants()">Submit</button>
+      <button class="btn primary" onclick="submitAllRestaurants()">Save All</button>
     </div>
   </div>
 </div>
 
-<!-- Map Tooltip -->
 <div id="map-tooltip">
   <div class="tooltip-country" id="tt-country"></div>
   <div id="tt-restaurants"></div>
 </div>
 
 <script>
-// ── State ────────────────────────────────────────────────────────────────────
-let state = {
-  countriesDone: [],
-  restaurants: [],
-  stats: {},
-  allCountries: [],
-  wheelCountries: [],
-  isSpinning: false,
-  currentAngle: 0,
-  isoNames: {},
-};
+// ── Password ──────────────────────────────────────────────────────────────────
+function checkPw() {
+  const val = document.getElementById('pw-input').value;
+  if (val === 'ilovefood') {
+    document.getElementById('pw-screen').style.display = 'none';
+    document.getElementById('main-app').style.display = 'block';
+    boot();
+  } else {
+    document.getElementById('pw-error').textContent = 'Incorrect password. Try again.';
+    document.getElementById('pw-input').value = '';
+    document.getElementById('pw-input').focus();
+  }
+}
 
-// ── Boot ─────────────────────────────────────────────────────────────────────
+// ── State ─────────────────────────────────────────────────────────────────────
+let state = { countriesDone:[], stats:{}, wheelCountries:[], isSpinning:false, currentAngle:0 };
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
 async function boot() {
   await Promise.all([loadStats(), loadCountries(), loadMostVisited()]);
   await loadMap();
@@ -838,17 +294,16 @@ async function boot() {
   buildCountriesPills();
 }
 
-// ── Data loading ─────────────────────────────────────────────────────────────
+// ── Stats ─────────────────────────────────────────────────────────────────────
 async function loadStats() {
   try {
     const r = await fetch('/api/stats');
     state.stats = await r.json();
-    const total = ALL_COUNTRIES_195.length;
     document.getElementById('stat-done').textContent = state.stats.countries_done;
-    document.getElementById('stat-remaining').textContent = total - state.stats.countries_done;
+    document.getElementById('stat-remaining').textContent = state.stats.countries_remaining;
     document.getElementById('stat-restaurants').textContent = state.stats.restaurants_logged;
-    document.getElementById('stat-total-label').textContent = `of ${total} places`;
-    const pct = (state.stats.countries_done / total * 100).toFixed(1);
+    document.getElementById('stat-eligible').textContent = state.stats.total_countries;
+    const pct = (state.stats.countries_done / state.stats.total_countries * 100).toFixed(1);
     document.getElementById('progress-fill').style.width = pct + '%';
   } catch(e) { console.warn('stats error', e); }
 }
@@ -858,17 +313,7 @@ async function loadCountries() {
     const r = await fetch('/api/countries');
     const data = await r.json();
     state.countriesDone = data.done;
-    refreshMapColors();
   } catch(e) { console.warn('countries error', e); }
-}
-
-function refreshMapColors() {
-  if (!Object.keys(state.isoNames).length) return; // map not loaded yet
-  const ds = new Set(state.countriesDone.map(c => c.country?.toLowerCase()));
-  d3.select('#world-map').selectAll('.country').attr('fill', d => {
-    const name = state.isoNames[parseInt(d.id, 10)] || '';
-    return ds.has(name.toLowerCase()) ? '#3d7a55' : '#1e2420';
-  });
 }
 
 async function loadMostVisited() {
@@ -876,556 +321,283 @@ async function loadMostVisited() {
     const r = await fetch('/api/countries');
     const data = await r.json();
     const list = document.getElementById('top5-list');
-    if (!data.done.length) {
-      list.innerHTML = '<div style="color:var(--text-dim);font-size:13px">No restaurants yet. Add some!</div>';
-      return;
-    }
-    // Sort by number of restaurants per country, show top 5
-    const sorted = [...data.done]
-      .filter(c => c.restaurants && c.restaurants.length)
-      .sort((a, b) => b.restaurants.length - a.restaurants.length)
-      .slice(0, 5);
+    if (!data.done.length) { list.innerHTML = '<div style="color:var(--text-dim);font-size:13px">No restaurants yet!</div>'; return; }
+    const sorted = [...data.done].filter(c => c.restaurants?.length).sort((a,b) => b.restaurants.length - a.restaurants.length).slice(0,5);
     list.innerHTML = sorted.map((item, i) => `
       <div class="top5-item">
-        <div class="top5-rank ${i === 0 ? 'gold' : ''}">${i + 1}</div>
+        <div class="top5-rank ${i===0?'gold':''}">${i+1}</div>
         <div class="top5-info">
           <div class="top5-name">${item.country}</div>
-          <div class="top5-meta">${item.restaurants.map(r => r.name).join(', ')}</div>
+          <div class="top5-meta">${item.restaurants.map(r=>r.name).join(', ')}</div>
         </div>
-        <div class="top5-score" style="font-size:13px;color:var(--text-dim)">${item.restaurants.length}×</div>
-      </div>
-    `).join('');
+        <div class="top5-count">${item.restaurants.length}×</div>
+      </div>`).join('');
   } catch(e) { console.warn('most visited error', e); }
 }
 
 // ── World Map ─────────────────────────────────────────────────────────────────
 async function loadMap() {
   const container = document.getElementById('world-map');
-  const W = container.clientWidth || 800;
-  const H = 520;
-
-  const svg = d3.select('#world-map')
-    .append('svg')
-    .attr('width', '100%')
-    .attr('height', H)
-    .attr('viewBox', `0 0 ${W} ${H}`);
-
-  // Gradient background
+  const W = container.clientWidth || 800; const H = 520;
+  const svg = d3.select('#world-map').append('svg').attr('width','100%').attr('height',H).attr('viewBox',`0 0 ${W} ${H}`);
   const defs = svg.append('defs');
-  const grad = defs.append('radialGradient').attr('id', 'bg-grad')
-    .attr('cx', '50%').attr('cy', '50%').attr('r', '60%');
-  grad.append('stop').attr('offset', '0%').attr('stop-color', '#111411');
-  grad.append('stop').attr('offset', '100%').attr('stop-color', '#0a0c0a');
-
-  svg.append('rect').attr('width', W).attr('height', H).attr('fill', 'url(#bg-grad)');
-
-  const projection = d3.geoNaturalEarth1()
-    .scale(W / 6.3)
-    .translate([W / 2, H / 2]);
-
+  const grad = defs.append('radialGradient').attr('id','bg-grad').attr('cx','50%').attr('cy','50%').attr('r','60%');
+  grad.append('stop').attr('offset','0%').attr('stop-color','#111411');
+  grad.append('stop').attr('offset','100%').attr('stop-color','#0a0c0a');
+  svg.append('rect').attr('width',W).attr('height',H).attr('fill','url(#bg-grad)');
+  const projection = d3.geoNaturalEarth1().scale(W/6.3).translate([W/2,H/2]);
   const path = d3.geoPath().projection(projection);
-
-  // Zoom + pan
-  const zoom = d3.zoom().scaleExtent([1, 8]).on('zoom', (e) => {
-    g.attr('transform', e.transform);
-  });
+  const zoom = d3.zoom().scaleExtent([1,8]).on('zoom',(e)=>g.attr('transform',e.transform));
   svg.call(zoom);
-
   const g = svg.append('g');
-
-  // Graticule
   const graticule = d3.geoGraticule();
-  g.append('path')
-    .datum(graticule())
-    .attr('d', path)
-    .attr('fill', 'none')
-    .attr('stroke', '#1a1f1a')
-    .attr('stroke-width', 0.3);
-
-  // Load world topojson
+  g.append('path').datum(graticule()).attr('d',path).attr('fill','none').attr('stroke','#1a1f1a').attr('stroke-width',0.3);
+  const doneSet = new Set(state.countriesDone.map(c=>c.country?.toLowerCase()));
+  const doneMap = {};
+  state.countriesDone.forEach(c=>{ if(c.country) doneMap[c.country.toLowerCase()]=c; });
   let world;
-  try {
-    const res = await fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json');
-    world = await res.json();
-  } catch(e) {
-    console.warn('Could not load map data:', e);
-    g.append('text').attr('x', W/2).attr('y', H/2)
-      .attr('text-anchor', 'middle').attr('fill', '#4a5a46')
-      .text('Map unavailable offline — check internet connection');
-    return;
-  }
-
-  const countries = topojson.feature(world, world.objects.countries);
-
-  state.isoNames = await getISONames();
-
+  try { const res = await fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json'); world = await res.json(); }
+  catch(e) { g.append('text').attr('x',W/2).attr('y',H/2).attr('text-anchor','middle').attr('fill','#4a5a46').text('Map unavailable — check internet connection'); return; }
+  const countries = topojson.feature(world,world.objects.countries);
+  const ISO_NAMES = getISONames();
   const tooltip = document.getElementById('map-tooltip');
-
-  g.selectAll('.country')
-    .data(countries.features)
-    .join('path')
-    .attr('class', 'country')
-    .attr('d', path)
-    .attr('fill', d => {
-      const name = state.isoNames[parseInt(d.id, 10)] || '';
-      const ds = new Set(state.countriesDone.map(c => c.country?.toLowerCase()));
-      return ds.has(name.toLowerCase()) ? '#3d7a55' : '#1e2420';
+  g.selectAll('.country').data(countries.features).join('path')
+    .attr('class','country').attr('d',path)
+    .attr('fill',d=>{ const name=ISO_NAMES[d.id]||''; return doneSet.has(name.toLowerCase())?'#3d7a55':'#1e2420'; })
+    .attr('stroke','#0d0f0e').attr('stroke-width',0.4).style('cursor','pointer')
+    .on('mousemove',function(event,d){
+      const name=ISO_NAMES[d.id]||`#${d.id}`; const key=name.toLowerCase(); const info=doneMap[key];
+      document.getElementById('tt-country').textContent=name;
+      const restDiv=document.getElementById('tt-restaurants');
+      if(info?.restaurants?.length) restDiv.innerHTML=info.restaurants.map(r=>`<div class="tooltip-restaurant">• ${r.name}</div>`).join('');
+      else if(info) restDiv.innerHTML='<div class="tooltip-restaurant">✓ Visited</div>';
+      else restDiv.innerHTML='<div style="color:var(--text-dim);font-size:11px;margin-top:2px">Not yet visited</div>';
+      tooltip.style.display='block'; tooltip.style.left=(event.clientX+14)+'px'; tooltip.style.top=(event.clientY-10)+'px';
+      d3.select(this).attr('fill',doneSet.has(key)?'#6dcc8f':'#2e3830');
     })
-    .attr('stroke', '#0d0f0e')
-    .attr('stroke-width', 0.4)
-    .style('cursor', 'pointer')
-    .on('mousemove', function(event, d) {
-      const name = state.isoNames[parseInt(d.id, 10)] || `Country #${d.id}`;
-      const key = name.toLowerCase();
-      const ds = new Set(state.countriesDone.map(c => c.country?.toLowerCase()));
-      const dm = {};
-      state.countriesDone.forEach(c => { if(c.country) dm[c.country.toLowerCase()] = c; });
-      const info = dm[key];
-      document.getElementById('tt-country').textContent = name;
-      const restDiv = document.getElementById('tt-restaurants');
-      if (info && info.restaurants && info.restaurants.length) {
-        restDiv.innerHTML = info.restaurants.map(r =>
-          `<div class="tooltip-restaurant">• ${r.name}${r.avg_score != null ? `<span class="tooltip-score"> — ${r.avg_score.toFixed(1)}</span>` : ''}</div>`
-        ).join('');
-      } else if (info) {
-        restDiv.innerHTML = '<div class="tooltip-restaurant">✓ Visited</div>';
-      } else {
-        restDiv.innerHTML = '<div style="color:var(--text-dim);font-size:11px;margin-top:2px">Not yet visited</div>';
-      }
-      tooltip.style.display = 'block';
-      tooltip.style.left = (event.clientX + 14) + 'px';
-      tooltip.style.top = (event.clientY - 10) + 'px';
-      d3.select(this).attr('fill', ds.has(key) ? '#6dcc8f' : '#2e3830');
-    })
-    .on('mouseleave', function(event, d) {
-      const name = state.isoNames[parseInt(d.id, 10)] || '';
-      const ds = new Set(state.countriesDone.map(c => c.country?.toLowerCase()));
-      d3.select(this).attr('fill', ds.has(name.toLowerCase()) ? '#3d7a55' : '#1e2420');
-      tooltip.style.display = 'none';
-    });
-
-  // Country borders
-  g.append('path')
-    .datum(topojson.mesh(world, world.objects.countries, (a, b) => a !== b))
-    .attr('d', path)
-    .attr('fill', 'none')
-    .attr('stroke', '#0d0f0e')
-    .attr('stroke-width', 0.4);
-
-  // Sync colors with current state (handles any data loaded after map render)
-  refreshMapColors();
+    .on('mouseleave',function(event,d){ const name=ISO_NAMES[d.id]||''; d3.select(this).attr('fill',doneSet.has(name.toLowerCase())?'#3d7a55':'#1e2420'); tooltip.style.display='none'; });
+  g.append('path').datum(topojson.mesh(world,world.objects.countries,(a,b)=>a!==b)).attr('d',path).attr('fill','none').attr('stroke','#0d0f0e').attr('stroke-width',0.4);
 }
 
-async function getISONames() {
-  // ISO 3166-1 numeric → country name (abbreviated, most commonly needed)
-  return {
-    4:"Afghanistan",8:"Albania",12:"Algeria",24:"Angola",32:"Argentina",70:"Bosnia and Herzegovina",
-    36:"Australia",40:"Austria",50:"Bangladesh",56:"Belgium",64:"Bhutan",
-    68:"Bolivia",76:"Brazil",100:"Bulgaria",116:"Cambodia",120:"Cameroon",
-    124:"Canada",140:"Central African Republic",152:"Chile",156:"China",
-    170:"Colombia",188:"Costa Rica",191:"Croatia",192:"Cuba",196:"Cyprus",
-    203:"Czech Republic",208:"Denmark",214:"Dominican Republic",218:"Ecuador",
-    818:"Egypt",222:"El Salvador",231:"Ethiopia",246:"Finland",250:"France",
-    266:"Gabon",268:"Georgia",276:"Germany",288:"Ghana",300:"Greece",320:"Guatemala",328:"Guyana",
-    332:"Haiti",340:"Honduras",356:"India",360:"Indonesia",364:"Iran",
-    368:"Iraq",372:"Ireland",376:"Israel",380:"Italy",388:"Jamaica",
-    392:"Japan",400:"Jordan",398:"Kazakhstan",404:"Kenya",410:"South Korea",
-    414:"Kuwait",418:"Laos",422:"Lebanon",434:"Libya",442:"Luxembourg",
-    454:"Malawi",458:"Malaysia",484:"Mexico",496:"Mongolia",504:"Morocco",508:"Mozambique",
-    516:"Namibia",524:"Nepal",528:"Netherlands",554:"New Zealand",
-    558:"Nicaragua",566:"Nigeria",578:"Norway",512:"Oman",586:"Pakistan",275:"Palestine",
-    591:"Panama",600:"Paraguay",604:"Peru",608:"Philippines",616:"Poland",
-    620:"Portugal",630:"Puerto Rico",634:"Qatar",642:"Romania",643:"Russia",
-    682:"Saudi Arabia",686:"Senegal",694:"Sierra Leone",703:"Slovakia",
-    705:"Slovenia",706:"Somalia",710:"South Africa",724:"Spain",
-    144:"Sri Lanka",729:"Sudan",752:"Sweden",756:"Switzerland",760:"Syria",
-    158:"Taiwan",762:"Tajikistan",764:"Thailand",792:"Turkey",800:"Uganda",
-    804:"Ukraine",784:"United Arab Emirates",826:"United Kingdom",
-    840:"United States",850:"US Virgin Islands",858:"Uruguay",860:"Uzbekistan",862:"Venezuela",
-    704:"Vietnam",780:"Trinidad and Tobago",795:"Turkmenistan",807:"North Macedonia",887:"Yemen",894:"Zambia",716:"Zimbabwe",
-  };
+function getISONames() {
+  return {4:"Afghanistan",8:"Albania",12:"Algeria",24:"Angola",32:"Argentina",36:"Australia",40:"Austria",50:"Bangladesh",56:"Belgium",64:"Bhutan",68:"Bolivia",76:"Brazil",100:"Bulgaria",116:"Cambodia",120:"Cameroon",124:"Canada",140:"Central African Republic",152:"Chile",156:"China",170:"Colombia",188:"Costa Rica",191:"Croatia",192:"Cuba",196:"Cyprus",203:"Czech Republic",208:"Denmark",214:"Dominican Republic",218:"Ecuador",818:"Egypt",222:"El Salvador",231:"Ethiopia",246:"Finland",250:"France",266:"Gabon",276:"Germany",288:"Ghana",300:"Greece",320:"Guatemala",332:"Haiti",340:"Honduras",356:"India",360:"Indonesia",364:"Iran",368:"Iraq",372:"Ireland",376:"Israel",380:"Italy",388:"Jamaica",392:"Japan",400:"Jordan",398:"Kazakhstan",404:"Kenya",410:"South Korea",414:"Kuwait",418:"Laos",422:"Lebanon",434:"Libya",442:"Luxembourg",454:"Malawi",458:"Malaysia",484:"Mexico",504:"Morocco",508:"Mozambique",516:"Namibia",524:"Nepal",528:"Netherlands",554:"New Zealand",558:"Nicaragua",566:"Nigeria",578:"Norway",512:"Oman",586:"Pakistan",591:"Panama",600:"Paraguay",604:"Peru",608:"Philippines",616:"Poland",620:"Portugal",630:"Puerto Rico",634:"Qatar",642:"Romania",643:"Russia",682:"Saudi Arabia",686:"Senegal",694:"Sierra Leone",703:"Slovakia",705:"Slovenia",706:"Somalia",710:"South Africa",724:"Spain",144:"Sri Lanka",729:"Sudan",752:"Sweden",756:"Switzerland",760:"Syria",158:"Taiwan",762:"Tajikistan",764:"Thailand",792:"Turkey",800:"Uganda",804:"Ukraine",784:"United Arab Emirates",826:"United Kingdom",840:"United States",858:"Uruguay",860:"Uzbekistan",862:"Venezuela",704:"Vietnam",887:"Yemen",894:"Zambia",716:"Zimbabwe"};
 }
 
 // ── Spin Wheel ────────────────────────────────────────────────────────────────
-const ALL_COUNTRIES_195 = [
-  "Afghanistan","Albania","Algeria","Andorra","Angola","Antigua and Barbuda",
-  "Argentina","Armenia","Australia","Austria","Azerbaijan","Bahamas","Bahrain",
-  "Bangladesh","Barbados","Belarus","Belgium","Belize","Benin","Bhutan","Bolivia",
-  "Bosnia and Herzegovina","Botswana","Brazil","Brunei","Bulgaria","Burkina Faso",
-  "Burundi","Cabo Verde","Cambodia","Cameroon","Canada","Central African Republic",
-  "Chad","Chile","China","Colombia","Comoros","Congo","Costa Rica","Croatia","Cuba",
-  "Cyprus","Czech Republic","Denmark","Djibouti","Dominica","Dominican Republic",
-  "East Timor","Ecuador","Egypt","El Salvador","Equatorial Guinea","Eritrea",
-  "Estonia","Eswatini","Ethiopia","Fiji","Finland","France","Gabon","Gambia",
-  "Georgia","Germany","Ghana","Greece","Grenada","Guatemala","Guinea",
-  "Guinea-Bissau","Guyana","Haiti","Honduras","Hungary","Iceland","India",
-  "Indonesia","Iran","Iraq","Ireland","Israel","Italy","Ivory Coast","Jamaica",
-  "Japan","Jordan","Kazakhstan","Kenya","Kiribati","Kuwait","Kyrgyzstan","Laos",
-  "Latvia","Lebanon","Lesotho","Liberia","Libya","Liechtenstein","Lithuania",
-  "Luxembourg","Madagascar","Malawi","Malaysia","Maldives","Mali","Malta",
-  "Marshall Islands","Mauritania","Mauritius","Mexico","Micronesia","Moldova",
-  "Monaco","Mongolia","Montenegro","Morocco","Mozambique","Myanmar","Namibia",
-  "Nauru","Nepal","Netherlands","New Zealand","Nicaragua","Niger","Nigeria",
-  "North Korea","North Macedonia","Norway","Oman","Pakistan","Palestine","Palau","Panama",
-  "Papua New Guinea","Paraguay","Peru","Philippines","Poland","Portugal","Puerto Rico","Qatar",
-  "Romania","Russia","Rwanda","Saint Kitts and Nevis","Saint Lucia",
-  "Saint Vincent and the Grenadines","Samoa","San Marino","Sao Tome and Principe",
-  "Saudi Arabia","Senegal","Serbia","Seychelles","Sierra Leone","Singapore",
-  "Slovakia","Slovenia","Solomon Islands","Somalia","South Africa","South Korea",
-  "South Sudan","Spain","Sri Lanka","Sudan","Suriname","Sweden","Switzerland",
-  "Syria","Taiwan","Tajikistan","Tanzania","Thailand","Togo","Tonga",
-  "Trinidad and Tobago","Tunisia","Turkey","Turkmenistan","Tuvalu","Uganda",
-  "Ukraine","United Arab Emirates","United Kingdom","United States","US Virgin Islands","Uruguay",
-  "Uzbekistan","Vanuatu","Vatican City","Venezuela","Vietnam","Yemen","Zambia","Zimbabwe"
-];
+const ALL_COUNTRIES = ["Afghanistan","Albania","Algeria","Andorra","Angola","Antigua and Barbuda","Argentina","Armenia","Australia","Austria","Azerbaijan","Bahamas","Bahrain","Bangladesh","Barbados","Belarus","Belgium","Belize","Benin","Bhutan","Bolivia","Bosnia and Herzegovina","Botswana","Brazil","Brunei","Bulgaria","Burkina Faso","Burundi","Cabo Verde","Cambodia","Cameroon","Canada","Central African Republic","Chad","Chile","China","Colombia","Comoros","Congo","Costa Rica","Croatia","Cuba","Cyprus","Czech Republic","Denmark","Djibouti","Dominica","Dominican Republic","East Timor","Ecuador","Egypt","El Salvador","Equatorial Guinea","Eritrea","Estonia","Eswatini","Ethiopia","Fiji","Finland","France","Gabon","Gambia","Georgia","Germany","Ghana","Greece","Grenada","Guatemala","Guinea","Guinea-Bissau","Guyana","Haiti","Honduras","Hungary","Iceland","India","Indonesia","Iran","Iraq","Ireland","Israel","Italy","Ivory Coast","Jamaica","Japan","Jordan","Kazakhstan","Kenya","Kiribati","Kuwait","Kyrgyzstan","Laos","Latvia","Lebanon","Lesotho","Liberia","Libya","Liechtenstein","Lithuania","Luxembourg","Madagascar","Malawi","Malaysia","Maldives","Mali","Malta","Marshall Islands","Mauritania","Mauritius","Mexico","Micronesia","Moldova","Monaco","Mongolia","Montenegro","Morocco","Mozambique","Myanmar","Namibia","Nauru","Nepal","Netherlands","New Zealand","Nicaragua","Niger","Nigeria","North Korea","North Macedonia","Norway","Oman","Pakistan","Palau","Palestine","Panama","Papua New Guinea","Paraguay","Peru","Philippines","Poland","Portugal","Qatar","Romania","Russia","Rwanda","Saint Kitts and Nevis","Saint Lucia","Saint Vincent and the Grenadines","Samoa","San Marino","Sao Tome and Principe","Saudi Arabia","Senegal","Serbia","Seychelles","Sierra Leone","Singapore","Slovakia","Slovenia","Solomon Islands","Somalia","South Africa","South Korea","South Sudan","Spain","Sri Lanka","Sudan","Suriname","Sweden","Switzerland","Syria","Taiwan","Tajikistan","Tanzania","Thailand","Togo","Tonga","Trinidad and Tobago","Tunisia","Turkey","Turkmenistan","Tuvalu","Uganda","Ukraine","United Arab Emirates","United Kingdom","United States","Uruguay","Uzbekistan","Vanuatu","Vatican City","Venezuela","Vietnam","Yemen","Zambia","Zimbabwe"];
 
 function buildWheel() {
-  const doneSet = new Set(state.countriesDone.map(c => c.country?.toLowerCase()));
-  state.wheelCountries = ALL_COUNTRIES_195.filter(c => !doneSet.has(c.toLowerCase()));
+  const doneSet = new Set(state.countriesDone.map(c=>c.country?.toLowerCase()));
+  state.wheelCountries = ALL_COUNTRIES.filter(c=>!doneSet.has(c.toLowerCase()));
   drawWheel(state.currentAngle);
-  const el = document.getElementById('stat-eligible');
-  if (el) el.textContent = state.wheelCountries.length;
 }
 
 function drawWheel(rotation) {
   const canvas = document.getElementById('wheel-canvas');
   const ctx = canvas.getContext('2d');
-  const cx = canvas.width / 2;
-  const cy = canvas.height / 2;
-  const r = cx - 4;
+  const cx = canvas.width/2, cy = canvas.height/2, r = cx-4;
   const countries = state.wheelCountries;
-  const n = Math.min(countries.length, 40); // show up to 40 slices
-  const slice = (2 * Math.PI) / n;
-
-  const palette = [
-    '#1e3a2a','#1a3328','#243d2e','#1f3a26','#2a4434',
-    '#193022','#22382a','#1c3526','#263f30','#1e3628',
-  ];
-
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  for (let i = 0; i < n; i++) {
-    const start = rotation + i * slice;
-    const end = start + slice;
-    ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.arc(cx, cy, r, start, end);
-    ctx.closePath();
-    ctx.fillStyle = palette[i % palette.length];
-    ctx.fill();
-    ctx.strokeStyle = '#0d0f0e';
-    ctx.lineWidth = 0.8;
-    ctx.stroke();
-
-    // Label — always shown, font size scales down for more slices
+  const n = Math.min(countries.length, 50);
+  const slice = (2*Math.PI)/n;
+  const palette = ['#1e3a2a','#1a3328','#243d2e','#1f3a26','#2a4434','#193022','#22382a','#1c3526','#263f30','#1e3628'];
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  for(let i=0;i<n;i++){
+    const start=rotation+i*slice, end=start+slice;
+    ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,r,start,end); ctx.closePath();
+    ctx.fillStyle=palette[i%palette.length]; ctx.fill();
+    ctx.strokeStyle='#0d0f0e'; ctx.lineWidth=0.8; ctx.stroke();
     ctx.save();
-    ctx.translate(cx, cy);
-    ctx.rotate(start + slice / 2);
-    ctx.textAlign = 'right';
-    ctx.fillStyle = '#8ab89a';
-    const fontSize = n <= 15 ? 11 : n <= 25 ? 9 : 8;
-    ctx.font = `${fontSize}px 'DM Sans', sans-serif`;
-    const label = countries[i % countries.length];
-    const maxChars = n <= 20 ? 22 : n <= 30 ? 16 : 12;
-    ctx.fillText(label.length > maxChars ? label.slice(0, maxChars - 1) + '…' : label, r - 8, 4);
+    ctx.translate(cx,cy); ctx.rotate(start+slice/2); ctx.textAlign='right';
+    ctx.fillStyle='#8ab89a';
+    const fontSize = n > 40 ? 7 : n > 25 ? 9 : 11;
+    ctx.font=`${fontSize}px 'DM Sans',sans-serif`;
+    if(slice > 0.08) ctx.fillText(countries[i%countries.length], r-8, fontSize/3);
     ctx.restore();
   }
-
-  // Center circle
-  ctx.beginPath();
-  ctx.arc(cx, cy, 28, 0, 2 * Math.PI);
-  ctx.fillStyle = '#0d0f0e';
-  ctx.fill();
-  ctx.strokeStyle = '#4caf72';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-
-  ctx.fillStyle = '#4caf72';
-  ctx.font = "bold 18px 'DM Sans', sans-serif";
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('🌍', cx, cy);
+  ctx.beginPath(); ctx.arc(cx,cy,28,0,2*Math.PI);
+  ctx.fillStyle='#0d0f0e'; ctx.fill();
+  ctx.strokeStyle='#4caf72'; ctx.lineWidth=2; ctx.stroke();
+  ctx.fillStyle='#4caf72'; ctx.font="bold 18px 'DM Sans',sans-serif";
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('🌍',cx,cy);
 }
 
 function spinWheel() {
-  if (state.isSpinning || !state.wheelCountries.length) return;
-  state.isSpinning = true;
-  document.getElementById('spin-btn').disabled = true;
-
-  const n = Math.min(state.wheelCountries.length, 40);
-  const slice = (2 * Math.PI) / n;
-
-  // Full rotations + random landing
-  const extraSpins = (5 + Math.floor(Math.random() * 5)) * 2 * Math.PI;
-  const targetAngle = state.currentAngle - extraSpins - Math.random() * 2 * Math.PI;
-
-  const duration = 4000;
-  const start = performance.now();
-  const startAngle = state.currentAngle;
-
-  function easeOut(t) { return 1 - Math.pow(1 - t, 4); }
-
-  function frame(now) {
-    const t = Math.min((now - start) / duration, 1);
-    state.currentAngle = startAngle + (targetAngle - startAngle) * easeOut(t);
+  if(state.isSpinning||!state.wheelCountries.length) return;
+  state.isSpinning=true;
+  document.getElementById('spin-btn').disabled=true;
+  const n=Math.min(state.wheelCountries.length,50);
+  const slice=(2*Math.PI)/n;
+  const extraSpins=(5+Math.floor(Math.random()*5))*2*Math.PI;
+  const targetAngle=state.currentAngle-extraSpins-Math.random()*2*Math.PI;
+  const duration=4000, start=performance.now(), startAngle=state.currentAngle;
+  function easeOut(t){return 1-Math.pow(1-t,4);}
+  function frame(now){
+    const t=Math.min((now-start)/duration,1);
+    state.currentAngle=startAngle+(targetAngle-startAngle)*easeOut(t);
     drawWheel(state.currentAngle);
-
-    if (t < 1) {
-      requestAnimationFrame(frame);
-    } else {
-      state.currentAngle = targetAngle;
-      // Figure out which slice the pointer (top = -π/2) is pointing to
-      const normalised = ((-state.currentAngle - Math.PI / 2) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
-      const idx = Math.floor(normalised / slice) % n;
-      const winner = state.wheelCountries[idx % state.wheelCountries.length];
-      document.getElementById('wheel-result-text').textContent = winner;
-      document.getElementById('wheel-result-text').style.animation = 'none';
-      void document.getElementById('wheel-result-text').offsetWidth;
-      document.getElementById('wheel-result-text').style.animation = 'pop 0.4s cubic-bezier(.4,0,.2,1)';
-      document.getElementById('wheel-result-hint').textContent = `Go find a great ${winner} restaurant! 🍽️`;
-      state.isSpinning = false;
-      document.getElementById('spin-btn').disabled = false;
+    if(t<1){requestAnimationFrame(frame);}
+    else{
+      state.currentAngle=targetAngle;
+      const norm=((-state.currentAngle-Math.PI/2)%(2*Math.PI)+2*Math.PI)%(2*Math.PI);
+      const idx=Math.floor(norm/slice)%n;
+      const winner=state.wheelCountries[idx%state.wheelCountries.length];
+      const el=document.getElementById('wheel-result-text');
+      el.textContent=winner; el.style.animation='none'; void el.offsetWidth; el.style.animation='pop 0.4s cubic-bezier(.4,0,.2,1)';
+      document.getElementById('wheel-result-hint').textContent=`Go find a great ${winner} restaurant! 🍽️`;
+      state.isSpinning=false; document.getElementById('spin-btn').disabled=false;
     }
   }
-
   requestAnimationFrame(frame);
 }
 
 // ── Countries pills ───────────────────────────────────────────────────────────
 function buildCountriesPills() {
   const grid = document.getElementById('countries-grid');
-  if (!state.countriesDone.length) {
-    grid.innerHTML = '<span style="color:var(--text-dim);font-size:13px">None yet — go eat! 🍴</span>';
-    return;
-  }
-  grid.innerHTML = state.countriesDone
-    .sort((a, b) => (a.country || '').localeCompare(b.country || ''))
-    .map(c => `<div class="country-pill">${c.country}</div>`)
-    .join('');
+  if(!state.countriesDone.length){grid.innerHTML='<span style="color:var(--text-dim);font-size:13px">None yet — go eat! 🍴</span>';return;}
+  grid.innerHTML=state.countriesDone.sort((a,b)=>(a.country||'').localeCompare(b.country||'')).map(c=>`<div class="country-pill">${c.country}</div>`).join('');
 }
 
-// ── Add restaurant modal (multi-row, multi-country) ───────────────────────────
-let rowCount = 0;
-let rowCountries = {}; // rowId -> Set<string>
+// ── Add restaurant modal ──────────────────────────────────────────────────────
+let rowCount=0;
 
-function openAddModal() {
+function openAddModal(){
   document.getElementById('add-modal').classList.add('open');
-  document.getElementById('submit-status').textContent = '';
-  document.getElementById('entry-rows').innerHTML = '';
-  rowCountries = {};
-  rowCount = 0;
-  addEntryRow();
-  addEntryRow();
-  addEntryRow();
+  document.getElementById('submit-status').textContent='';
+  document.getElementById('entry-rows').innerHTML='';
+  rowCount=0;
+  addEntryRow(); addEntryRow(); addEntryRow();
 }
+function closeAddModal(){ document.getElementById('add-modal').classList.remove('open'); }
 
-function closeAddModal() {
-  document.getElementById('add-modal').classList.remove('open');
-}
-
-function addEntryRow() {
-  const id = ++rowCount;
-  rowCountries[id] = new Set();
-  const row = document.createElement('div');
-  row.id = `row-${id}`;
-  row.style.cssText = 'display:grid;grid-template-columns:1fr 1fr 32px;gap:6px;align-items:start;';
-  row.innerHTML = `
-    <input type="text" placeholder="Restaurant name"
-      style="padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:DM Sans,sans-serif;font-size:13px;outline:none;margin-top:0;"
-      class="row-name" data-id="${id}" />
-    <div class="country-tags-wrap">
-      <div class="country-tags-input" id="ctags-${id}" onclick="focusCInput(${id})">
-        <input type="text" class="ctype-input" id="cinput-${id}" placeholder="Country"
-          autocomplete="off"
-          oninput="filterCOptions(${id})"
-          onfocus="showCDropdown(${id})"
-          onblur="hideCDropdown(${id})"
-          onkeydown="handleCKey(event,${id})" />
-      </div>
-      <div class="country-dropdown" id="cdropdown-${id}"></div>
+function addEntryRow(){
+  const id=++rowCount;
+  const row=document.createElement('div');
+  row.className='entry-row'; row.id=`row-${id}`;
+  row.innerHTML=`
+    <div class="entry-row-top">
+      <input type="text" placeholder="Restaurant name" class="entry-input row-name" data-id="${id}" />
+      <button class="entry-remove" onclick="removeRow(${id})" title="Remove">×</button>
     </div>
-    <button onclick="removeRow(${id})"
-      style="background:none;border:none;color:var(--text-dim);font-size:16px;cursor:pointer;padding:0;line-height:1;margin-top:9px;"
-      title="Remove row">×</button>
-  `;
+    <div class="country-tag-wrap" id="ctw-${id}">
+      <input type="text" placeholder="Type to search countries..." class="country-tag-input" id="cti-${id}"
+        oninput="filterCountries(${id})" onfocus="openDropdown(${id})" onblur="scheduleClose(${id})" />
+      <div class="country-dropdown" id="cdd-${id}"></div>
+      <div class="country-chips" id="chips-${id}"></div>
+    </div>`;
   document.getElementById('entry-rows').appendChild(row);
   row.querySelector('.row-name').focus();
+  populateDropdown(id,'');
 }
 
-function removeRow(id) {
-  const row = document.getElementById(`row-${id}`);
-  if (row) row.remove();
-  delete rowCountries[id];
+function removeRow(id){ const r=document.getElementById(`row-${id}`); if(r) r.remove(); }
+
+const rowCountries={};
+
+function filterCountries(id){
+  const val=document.getElementById(`cti-${id}`).value.toLowerCase();
+  populateDropdown(id,val);
+  openDropdown(id);
 }
 
-// ── Country typeahead helpers ─────────────────────────────────────────────────
-function focusCInput(id) {
-  document.getElementById(`cinput-${id}`)?.focus();
+function populateDropdown(id, filter){
+  const selected=rowCountries[id]||new Set();
+  const dd=document.getElementById(`cdd-${id}`);
+  const matches=ALL_COUNTRIES.filter(c=>c.toLowerCase().includes(filter)&&!selected.has(c));
+  dd.innerHTML=matches.slice(0,40).map(c=>`<div class="country-option" onmousedown="selectCountry(${id},'${c.replace(/'/g,"\\'")}')"> ${c}</div>`).join('');
+  if(!matches.length) dd.innerHTML='<div style="padding:8px 12px;font-size:12px;color:var(--text-dim)">No matches</div>';
 }
 
-function renderCTags(id) {
-  const wrap = document.getElementById(`ctags-${id}`);
-  const input = document.getElementById(`cinput-${id}`);
-  if (!wrap || !input) return;
-  wrap.querySelectorAll('.ctag').forEach(t => t.remove());
-  const sel = rowCountries[id] || new Set();
-  sel.forEach(c => {
-    const tag = document.createElement('div');
-    tag.className = 'ctag';
-    tag.innerHTML = `${c} <button type="button" onmousedown="event.preventDefault();removeCTag(${id},${JSON.stringify(c)})">×</button>`;
-    wrap.insertBefore(tag, input);
-  });
-  input.placeholder = sel.size > 0 ? '' : 'Country';
-}
+function openDropdown(id){ document.getElementById(`cdd-${id}`).classList.add('open'); }
+function closeDropdown(id){ document.getElementById(`cdd-${id}`).classList.remove('open'); }
+function scheduleClose(id){ setTimeout(()=>closeDropdown(id),150); }
 
-function getFilteredCOptions(id) {
-  const q = (document.getElementById(`cinput-${id}`)?.value || '').toLowerCase().trim();
-  const sel = rowCountries[id] || new Set();
-  return ALL_COUNTRIES_195.filter(c => !sel.has(c) && (!q || c.toLowerCase().includes(q)));
-}
-
-function renderCDropdown(id) {
-  const dd = document.getElementById(`cdropdown-${id}`);
-  if (!dd) return;
-  const opts = getFilteredCOptions(id).slice(0, 8);
-  if (!opts.length) {
-    dd.innerHTML = '<div class="coption" style="color:var(--text-dim);cursor:default;">No matches</div>';
-  } else {
-    dd.innerHTML = opts.map(c =>
-      `<div class="coption" onmousedown="event.preventDefault()" onclick="addCTag(${id},${JSON.stringify(c)})">${c}</div>`
-    ).join('');
-  }
-}
-
-function showCDropdown(id) {
-  renderCDropdown(id);
-  const dd = document.getElementById(`cdropdown-${id}`);
-  const wrap = document.getElementById(`ctags-${id}`);
-  if (!dd || !wrap) return;
-  const rect = wrap.getBoundingClientRect();
-  dd.style.top = (rect.bottom + 3) + 'px';
-  dd.style.left = rect.left + 'px';
-  dd.style.width = rect.width + 'px';
-  dd.classList.add('open');
-}
-
-function hideCDropdown(id) {
-  setTimeout(() => document.getElementById(`cdropdown-${id}`)?.classList.remove('open'), 200);
-}
-
-function filterCOptions(id) {
-  renderCDropdown(id);
-  showCDropdown(id);
-}
-
-function addCTag(id, country) {
-  if (!rowCountries[id]) rowCountries[id] = new Set();
+function selectCountry(id,country){
+  if(!rowCountries[id]) rowCountries[id]=new Set();
   rowCountries[id].add(country);
-  renderCTags(id);
-  const inp = document.getElementById(`cinput-${id}`);
-  if (inp) { inp.value = ''; inp.focus(); }
-  renderCDropdown(id);
+  document.getElementById(`cti-${id}`).value='';
+  renderChips(id);
+  populateDropdown(id,'');
+  document.getElementById(`cti-${id}`).focus();
 }
 
-function removeCTag(id, country) {
+function removeCountry(id,country){
   rowCountries[id]?.delete(country);
-  renderCTags(id);
-  renderCDropdown(id);
+  renderChips(id);
+  populateDropdown(id, document.getElementById(`cti-${id}`).value.toLowerCase());
 }
 
-function handleCKey(event, id) {
-  if (event.key === 'Escape') {
-    hideCDropdown(id);
-  } else if (event.key === 'Enter') {
-    event.preventDefault();
-    const first = getFilteredCOptions(id)[0];
-    if (first) addCTag(id, first);
-  }
+function renderChips(id){
+  const chips=document.getElementById(`chips-${id}`);
+  const selected=rowCountries[id]||new Set();
+  chips.innerHTML=[...selected].map(c=>`
+    <div class="country-chip">
+      ${c}
+      <button class="chip-remove" onmousedown="removeCountry(${id},'${c.replace(/'/g,"\\'")}')">×</button>
+    </div>`).join('');
 }
 
-async function submitAllRestaurants() {
-  const rows = document.getElementById('entry-rows').querySelectorAll('.row-name');
-  const entries = [];
-
-  rows.forEach(nameInput => {
-    const id = nameInput.dataset.id;
-    const name = nameInput.value.trim();
-    const countries = rowCountries[id] ? [...rowCountries[id]] : [];
-    if (name) entries.push({ name, countries });
+async function submitAllRestaurants(){
+  const rows=document.querySelectorAll('.row-name');
+  const entries=[];
+  rows.forEach(inp=>{
+    const id=inp.dataset.id;
+    const name=inp.value.trim();
+    const countries=[...(rowCountries[id]||new Set())];
+    if(name) entries.push({name, countries});
   });
-
-  if (!entries.length) { document.getElementById('submit-status').textContent = 'No restaurants to save.'; return; }
-
-  const status = document.getElementById('submit-status');
-  status.style.color = 'var(--text-dim)';
-  status.textContent = `Saving ${entries.length} restaurant${entries.length > 1 ? 's' : ''}...`;
-
-  let saved = 0;
-  const errors = [];
-  for (const payload of entries) {
-    try {
-      const r = await fetch('/api/restaurants', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      if (r.ok) {
-        saved++;
-      } else {
-        const body = await r.json().catch(() => ({}));
-        errors.push(body.error === 'restaurant already logged'
-          ? `"${payload.name}" already logged`
-          : `"${payload.name}" failed`);
-      }
-    } catch(e) { errors.push(`"${payload.name}" failed`); }
+  if(!entries.length){document.getElementById('submit-status').textContent='No restaurants to save.';return;}
+  const status=document.getElementById('submit-status');
+  status.style.color='var(--text-dim)'; status.textContent=`Saving ${entries.length} restaurant${entries.length>1?'s':''}...`;
+  let saved=0,failed=0;
+  for(const e of entries){
+    try{
+      const r=await fetch('/api/restaurants',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(e)});
+      if(r.ok) saved++; else failed++;
+    }catch{failed++;}
   }
-
-  // Reload dashboard data regardless of outcome
-  await Promise.all([loadStats(), loadCountries(), loadMostVisited()]);
-  buildWheel();
-  buildCountriesPills();
-
-  if (errors.length) {
-    status.style.color = 'var(--gold)';
-    status.textContent = (saved ? `✓ ${saved} saved. ` : '') + errors.join(', ');
-    // Reset rows so user can fix and retry
-    document.getElementById('entry-rows').innerHTML = '';
-    rowCountries = {};
-    rowCount = 0;
-    addEntryRow();
-  } else {
-    // Full success — flash message then close
-    status.style.color = 'var(--green-bright)';
-    status.textContent = `✓ ${saved} restaurant${saved > 1 ? 's' : ''} saved!`;
-    setTimeout(() => closeAddModal(), 1000);
-  }
+  status.style.color=failed?'var(--gold)':'var(--green-bright)';
+  status.textContent=failed?`✓ ${saved} saved, ${failed} failed`:`✓ ${saved} restaurant${saved>1?'s':''} saved!`;
+  rows.forEach(inp=>{ delete rowCountries[inp.dataset.id]; });
+  await Promise.all([loadStats(),loadCountries(),loadMostVisited()]);
+  buildWheel(); buildCountriesPills();
+  document.getElementById('entry-rows').innerHTML=''; rowCount=0;
+  addEntryRow(); addEntryRow(); addEntryRow();
 }
 
+// ── Favorites (hard-coded) ────────────────────────────────────────────────────
+const FAVORITES = {
+  manasi: [
+    { name: "Baan Mae",   country: "Laos" },
+    { name: "Open Crumb", country: "Ghana" },
+    { name: "Albi",       country: "Palestine" },
+  ],
+  pranay: [
+    { name: "Open Crumb",          country: "Ghana" },
+    { name: "Seychelles",          country: "Greece" },
+    { name: "My Little Chamomile", country: "Greece" },
+  ],
+};
 
-// Close modal on backdrop click
-document.getElementById('add-modal').addEventListener('click', function(e) {
-  if (e.target === this) closeAddModal();
-});
-
-// ── Password gate ─────────────────────────────────────────────────────────────
-function checkPassword() {
-  const val = document.getElementById('pw-input').value;
-  if (val === 'ilovefood') {
-    sessionStorage.setItem('auth', 'true');
-    document.getElementById('password-gate').style.display = 'none';
-    boot();
-  } else {
-    document.getElementById('pw-error').textContent = 'Incorrect password. Try again.';
-    document.getElementById('pw-input').value = '';
-    document.getElementById('pw-input').focus();
-  }
+function showFavs(person) {
+  document.querySelectorAll('.fav-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.fav-tab').forEach(t => { if(t.textContent.toLowerCase() === person) t.classList.add('active'); });
+  const list = document.getElementById('fav-list');
+  const rankClasses = ['fav-rank-1','fav-rank-2','fav-rank-3'];
+  const medals = ['🥇','🥈','🥉'];
+  list.innerHTML = FAVORITES[person].map((item, i) => `
+    <div class="fav-item">
+      <div class="fav-rank ${rankClasses[i]}">${medals[i]}</div>
+      <div class="fav-info">
+        <div class="fav-name">${item.name}</div>
+        <div class="fav-country">${item.country}</div>
+      </div>
+    </div>`).join('');
 }
 
-// Skip gate if already authenticated this session
-if (sessionStorage.getItem('auth') === 'true') {
-  document.getElementById('password-gate').style.display = 'none';
-  boot();
-}
+document.getElementById('add-modal').addEventListener('click',function(e){if(e.target===this)closeAddModal();});
+
+showFavs('manasi');
 </script>
 </body>
 </html>
