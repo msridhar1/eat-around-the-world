@@ -135,8 +135,7 @@
   .chip-remove:hover { opacity:1; }
 
   
-  #map-tooltip { position:fixed; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:8px 12px; font-size:12px; pointer-events:none; z-index:50; display:none; max-width:220px; }
-@media (hover: none) { #map-tooltip { display:none !important; } }
+  #map-tooltip { position:fixed; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:8px 12px; font-size:12px; pointer-events:none; z-index:50; display:none; max-width:min(220px,90vw); }
   .tooltip-country { font-weight:600; font-size:13px; color:var(--text); }
   .tooltip-restaurant { color:var(--green-bright); margin-top:2px; }
 
@@ -388,10 +387,23 @@ async function loadMap() {
       if(info?.restaurants?.length) restDiv.innerHTML=info.restaurants.map(r=>`<div class="tooltip-restaurant">• ${r.name}</div>`).join('');
       else if(info) restDiv.innerHTML='<div class="tooltip-restaurant">✓ Visited</div>';
       else restDiv.innerHTML='<div style="color:var(--text-dim);font-size:11px;margin-top:2px">Not yet visited</div>';
-      tooltip.style.display='block'; tooltip.style.left=(event.clientX+14)+'px'; tooltip.style.top=(event.clientY-10)+'px';
+      const tx=Math.min(event.clientX+14,window.innerWidth-230); const ty=Math.min(event.clientY-10,window.innerHeight-120);
+      tooltip.style.display='block'; tooltip.style.left=tx+'px'; tooltip.style.top=ty+'px';
       d3.select(this).attr('fill',doneSet.has(key)?'#6dcc8f':'#2e3830');
     })
-    .on('mouseleave',function(event,d){ const name=ISO_NAMES[d.id]||''; d3.select(this).attr('fill',doneSet.has(name.toLowerCase())?'#3d7a55':'#1e2420'); tooltip.style.display='none'; });
+    .on('mouseleave',function(event,d){ const name=ISO_NAMES[d.id]||''; d3.select(this).attr('fill',doneSet.has(name.toLowerCase())?'#3d7a55':'#1e2420'); tooltip.style.display='none'; })
+    .on('click',function(event,d){
+      event.stopPropagation();
+      const name=ISO_NAMES[d.id]||`#${d.id}`; const key=name.toLowerCase(); const info=doneMap[key];
+      document.getElementById('tt-country').textContent=name;
+      const restDiv=document.getElementById('tt-restaurants');
+      if(info?.restaurants?.length) restDiv.innerHTML=info.restaurants.map(r=>`<div class="tooltip-restaurant">• ${r.name}</div>`).join('');
+      else if(info) restDiv.innerHTML='<div class="tooltip-restaurant">✓ Visited</div>';
+      else restDiv.innerHTML='<div style="color:var(--text-dim);font-size:11px;margin-top:2px">Not yet visited</div>';
+      const tx=Math.min(event.clientX+14,window.innerWidth-230); const ty=Math.min(event.clientY-10,window.innerHeight-120);
+      tooltip.style.display='block'; tooltip.style.left=tx+'px'; tooltip.style.top=ty+'px';
+    });
+  svg.on('click',()=>{ tooltip.style.display='none'; });
   g.append('path').datum(topojson.mesh(world,world.objects.countries,(a,b)=>a!==b)).attr('d',path).attr('fill','none').attr('stroke','#0d0f0e').attr('stroke-width',0.4);
 }
 
