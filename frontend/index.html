@@ -173,7 +173,7 @@
       <span class="tagline">Manasi & Pranay</span>
     </div>
     <div class="header-actions">
-      <button class="btn primary" onclick="openAddModal()">+ Add Restaurant</button>
+      <button id="add-btn" class="btn primary" onclick="openAddModal()">+ Add Restaurant</button>
     </div>
   </header>
 
@@ -269,18 +269,30 @@
 </div>
 
 <script>
+
 // ── Password ──────────────────────────────────────────────────────────────────
+let canEdit = false;
+
 function checkPw() {
   const val = document.getElementById('pw-input').value;
-  if (val === 'ilovefood') {
-    document.getElementById('pw-screen').style.display = 'none';
-    document.getElementById('main-app').style.display = 'block';
-    boot();
+  if (val === 'iloveyouback') {
+    canEdit = true;
+    unlockApp();
+  } else if (val === 'ilovefood') {
+    canEdit = false;
+    unlockApp();
   } else {
     document.getElementById('pw-error').textContent = 'Incorrect password. Try again.';
     document.getElementById('pw-input').value = '';
     document.getElementById('pw-input').focus();
   }
+}
+
+function unlockApp() {
+  document.getElementById('pw-screen').style.display = 'none';
+  document.getElementById('main-app').style.display = 'block';
+  if (!canEdit) document.getElementById('add-btn').style.display = 'none';
+  boot();
 }
 
 // ── State ─────────────────────────────────────────────────────────────────────
